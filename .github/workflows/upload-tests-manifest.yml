@@ -3,6 +3,9 @@
 # and test reports have been uploaded to the `test-results` artifact.
 name: Upload bundler test manifests to areweturboyet.com
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 8 * * *'
