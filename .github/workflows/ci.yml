@@ -1,0 +1,4 @@
+- name: Crypto Timing Safety
+  run: |
+    node test/bench/crypto-timing.js
+    echo "Timing consistency verified"
