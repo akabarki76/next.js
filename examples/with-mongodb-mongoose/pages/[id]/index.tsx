@@ -21,6 +21,13 @@ const PetPage = ({ pet }: Props) => {
   const handleDelete = async () => {
     const petID = router.query.id;
 
+    // Validate petID format (MongoDB ObjectId: 24-character hexadecimal string)
+    const isValidObjectId = /^[a-fA-F0-9]{24}$/.test(petID as string);
+    if (!isValidObjectId) {
+      setMessage("Invalid pet ID.");
+      return;
+    }
+
     try {
       await fetch(`/api/pets/${petID}`, {
         method: "Delete",
