@@ -2,6 +2,10 @@ import { nextTestSetup } from 'e2e-utils'
 import { check, retry, waitFor } from 'next-test-utils'
 import cheerio from 'cheerio'
 import stripAnsi from 'strip-ansi'
+import {
+  NEXT_RSC_UNION_QUERY,
+  RSC_HEADER,
+} from 'next/dist/client/components/app-router-headers'
 
 // TODO: We should decide on an established pattern for gating test assertions
 // on experimental flags. For example, as a first step we could all the common
@@ -306,18 +310,21 @@ describe('app dir - basic', () => {
   }
 
   it('should use text/x-component for flight', async () => {
-    const res = await next.fetch('/dashboard/deployments/123', {
-      headers: {
-        ['RSC'.toString()]: '1',
-      },
-    })
+    const res = await next.fetch(
+      `/dashboard/deployments/123?${NEXT_RSC_UNION_QUERY}`,
+      {
+        headers: {
+          [RSC_HEADER]: '1',
+        },
+      }
+    )
     expect(res.headers.get('Content-Type')).toBe('text/x-component')
   })
 
   it('should use text/x-component for flight with edge runtime', async () => {
-    const res = await next.fetch('/dashboard', {
+    const res = await next.fetch(`/dashboard?${NEXT_RSC_UNION_QUERY}`, {
       headers: {
-        ['RSC'.toString()]: '1',
+        [RSC_HEADER]: '1',
       },
     })
     expect(res.headers.get('Content-Type')).toBe('text/x-component')
@@ -332,9 +339,9 @@ describe('app dir - basic', () => {
   })
 
   it('should return the `vary` header from pages for flight requests', async () => {
-    const res = await next.fetch('/', {
+    const res = await next.fetch(`/?${NEXT_RSC_UNION_QUERY}`, {
       headers: {
-        ['RSC'.toString()]: '1',
+        [RSC_HEADER]: '1',
       },
     })
     expect(res.headers.get('vary')).toBe(
