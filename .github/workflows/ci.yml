@@ -6,16 +6,16 @@ on:
   push:
     branches: [main, canary]
 
-# Minimal top-level permissions as fallback
+# Minimal top-level permissions
 permissions:
-  contents: read
+  contents: read  # Only required for checking out code
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write  # For status reporting only
+      checks: write  # For updating CI status
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, timing-bench]
     permissions:
-      pull-requests: write  # Only for commenting
+      pull-requests: write  # Only for PR comments
     steps:
       - name: Post benchmark results
         uses: actions/github-script@v7
