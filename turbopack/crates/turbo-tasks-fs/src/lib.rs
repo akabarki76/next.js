@@ -1301,7 +1301,7 @@ impl FileSystemPath {
     /// Creates a new [`Vc<FileSystemPath>`] like `self` but with the given
     /// extension.
     #[turbo_tasks::function]
-    pub async fn with_extension(&self, extension: RcStr) -> Vc<FileSystemPath> {
+    pub fn with_extension(&self, extension: RcStr) -> Vc<FileSystemPath> {
         let (path_without_extension, _) = self.split_extension();
         Self::new_normalized(
             *self.fs,
@@ -2167,7 +2167,7 @@ impl ValueToString for FileJsonContent {
     /// This operation will only succeed if the file contents are a valid JSON
     /// value.
     #[turbo_tasks::function]
-    async fn to_string(&self) -> Result<Vc<RcStr>> {
+    fn to_string(&self) -> Result<Vc<RcStr>> {
         match self {
             FileJsonContent::Content(json) => Ok(Vc::cell(json.to_string().into())),
             FileJsonContent::Unparseable(e) => Err(anyhow!("File is not valid JSON: {}", e)),

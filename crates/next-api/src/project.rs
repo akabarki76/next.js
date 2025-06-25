@@ -269,7 +269,7 @@ pub struct ProjectContainer {
 #[turbo_tasks::value_impl]
 impl ProjectContainer {
     #[turbo_tasks::function]
-    pub async fn new(name: RcStr, dev: bool) -> Result<Vc<Self>> {
+    pub fn new(name: RcStr, dev: bool) -> Result<Vc<Self>> {
         Ok(ProjectContainer {
             name,
             // we only need to enable versioning in dev mode, since build
@@ -747,7 +747,7 @@ impl Project {
     }
 
     #[turbo_tasks::function]
-    pub(super) async fn is_watch_enabled(&self) -> Result<Vc<bool>> {
+    pub(super) fn is_watch_enabled(&self) -> Result<Vc<bool>> {
         Ok(Vc::cell(self.watch.enable))
     }
 
@@ -1837,7 +1837,7 @@ async fn get_referenced_output_assets(
 }
 
 #[turbo_tasks::function(operation)]
-async fn all_assets_from_entries_operation(
+fn all_assets_from_entries_operation(
     operation: OperationVc<OutputAssets>,
 ) -> Result<Vc<OutputAssets>> {
     let assets = operation.connect();

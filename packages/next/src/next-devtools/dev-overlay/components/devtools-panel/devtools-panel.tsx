@@ -228,10 +228,12 @@ export const DEVTOOLS_PANEL_STYLES = css`
 
   [data-nextjs-devtools-panel-overlay-backdrop] {
     opacity: 0;
+    visibility: hidden;
   }
 
   [data-nextjs-devtools-panel-overlay-backdrop='true'] {
     opacity: 1;
+    visibility: visible;
   }
 
   [data-nextjs-devtools-panel-draggable] {

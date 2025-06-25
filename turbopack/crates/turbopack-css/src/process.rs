@@ -54,14 +54,8 @@ impl PartialEq for StyleSheetLike<'_, '_> {
 
 pub type CssOutput = (ToCssResult, Option<Rope>);
 
-#[turbo_tasks::value(transparent, serialization = "none", eq = "manual")]
+#[turbo_tasks::value(transparent)]
 struct LightningCssTargets(#[turbo_tasks(trace_ignore)] pub Targets);
-
-impl PartialEq for LightningCssTargets {
-    fn eq(&self, _: &Self) -> bool {
-        false
-    }
-}
 
 /// Returns the LightningCSS targets for the given browserslist query.
 #[turbo_tasks::function]
@@ -721,7 +715,7 @@ impl Issue for ParsingIssue {
     }
 
     #[turbo_tasks::function]
-    async fn description(&self) -> Result<Vc<OptionStyledString>> {
+    fn description(&self) -> Result<Vc<OptionStyledString>> {
         Ok(Vc::cell(Some(
             StyledString::Text(self.msg.clone()).resolved_cell(),
         )))

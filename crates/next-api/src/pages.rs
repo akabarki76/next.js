@@ -1001,6 +1001,28 @@ impl PageEndpoint {
                     client_module_graph,
                     *project.per_page_module_graph().await?,
                 );
+
+                // We only validate the global css imports when there is not a `app` folder at the
+                // root of the project.
+                if project.app_project().await?.is_none() {
+                    let app_module = project
+                        .pages_project()
+                        .client_module_context()
+                        .process(
+                            Vc::upcast(FileSource::new(
+                                this.pages_structure.await?.app.file_path(),
+                            )),
+                            ReferenceType::Entry(EntryReferenceSubType::Page),
+                        )
+                        .to_resolved()
+                        .await?
+                        .module();
+
+                    reduced_graphs
+                        .validate_pages_css_imports(self.client_module(), app_module)
+                        .await?;
+                }
+
                 let next_dynamic_imports = reduced_graphs
                     .get_next_dynamic_imports_for_endpoint(self.client_module())
                     .await?;
@@ -1221,7 +1243,7 @@ impl PageEndpoint {
     }
 
     #[turbo_tasks::function]
-    async fn react_loadable_manifest(
+    fn react_loadable_manifest(
         &self,
         dynamic_import_entries: Vc<DynamicImportedChunks>,
         runtime: NextRuntime,

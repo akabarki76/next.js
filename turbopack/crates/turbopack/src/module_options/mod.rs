@@ -31,7 +31,7 @@ use crate::{
 };
 
 #[turbo_tasks::function]
-async fn package_import_map_from_import_mapping(
+fn package_import_map_from_import_mapping(
     package_name: RcStr,
     package_mapping: ResolvedVc<ImportMapping>,
 ) -> Vc<ImportMap> {
@@ -41,7 +41,7 @@ async fn package_import_map_from_import_mapping(
 }
 
 #[turbo_tasks::function]
-async fn package_import_map_from_context(
+fn package_import_map_from_context(
     package_name: RcStr,
     context_path: ResolvedVc<FileSystemPath>,
 ) -> Vc<ImportMap> {

@@ -624,6 +624,9 @@ name = "bitflags"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c8214115b7bf84099f1309324e63141d4c5d7cc26862f97a0a857dbefe165bd"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bitreader"
@@ -3605,8 +3608,9 @@ dependencies = [
 
 [[package]]
 name = "lightningcss"
-version = "1.0.0-alpha.66"
-source = "git+https://github.com/timneutkens/lightningcss?branch=add%2Fbrowserslist-options#4e73e2321bd50d254aa81556f7ff2c4f7ac95da8"
+version = "1.0.0-alpha.67"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "798fba4e1205eed356b8ed7754cc3f7f04914e27855ca641409f4a532e992149"
 dependencies = [
  "ahash 0.8.11",
  "bitflags 2.9.0",
@@ -3634,7 +3638,8 @@ dependencies = [
 [[package]]
 name = "lightningcss-derive"
 version = "1.0.0-alpha.43"
-source = "git+https://github.com/timneutkens/lightningcss?branch=add%2Fbrowserslist-options#4e73e2321bd50d254aa81556f7ff2c4f7ac95da8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84c12744d1279367caed41739ef094c325d53fb0ffcd4f9b84a368796f870252"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -4800,7 +4805,8 @@ dependencies = [
 [[package]]
 name = "parcel_selectors"
 version = "0.28.2"
-source = "git+https://github.com/timneutkens/lightningcss?branch=add%2Fbrowserslist-options#4e73e2321bd50d254aa81556f7ff2c4f7ac95da8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54fd03f1ad26cb6b3ec1b7414fa78a3bd639e7dbb421b1a60513c96ce886a196"
 dependencies = [
  "bitflags 2.9.0",
  "cssparser",
@@ -6766,7 +6772,8 @@ dependencies = [
 [[package]]
 name = "static-self"
 version = "0.1.2"
-source = "git+https://github.com/timneutkens/lightningcss?branch=add%2Fbrowserslist-options#4e73e2321bd50d254aa81556f7ff2c4f7ac95da8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6635404b73efc136af3a7956e53c53d4f34b2f16c95a15c438929add0f69412"
 dependencies = [
  "indexmap 2.7.1",
  "smallvec",
@@ -6776,7 +6783,8 @@ dependencies = [
 [[package]]
 name = "static-self-derive"
 version = "0.1.1"
-source = "git+https://github.com/timneutkens/lightningcss?branch=add%2Fbrowserslist-options#4e73e2321bd50d254aa81556f7ff2c4f7ac95da8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5268c96d4b907c558a9a52d8492522d6c7b559651a5e1d8f2d551e461b9425d5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6834,9 +6842,9 @@ dependencies = [
 
 [[package]]
 name = "styled_jsx"
-version = "0.93.0"
+version = "0.93.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c237ae48a09c98ea27451e4cd9578c8e89985971617e2a4c0c9d15960b878db"
+checksum = "61a00e432196d7f7779b5ba6e296680b8f3190d5885823d42bd1af528b9529f1"
 dependencies = [
  "anyhow",
  "lightningcss",
@@ -7086,9 +7094,9 @@ dependencies = [
 
 [[package]]
 name = "swc_core"
-version = "29.1.2"
+version = "29.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5ea5991cb2874f57c0c7bff4cf8f66b6b49f2e17595efa9781fbabac63ca6ef"
+checksum = "652bfb5da2b20fd9d39b767a34df30ae3d66c0bf8b0014c4d56e87fc8024a178"
 dependencies = [
  "binding_macros",
  "par-core",
@@ -7527,9 +7535,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_lexer"
-version = "17.0.3"
+version = "17.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4c284f6251b5e475549491d7e2b473b83f746e3c3ea49a02e87d9862c46563a"
+checksum = "0a257fda06cb2aa3f6c0d0d13b534e3376d542d1d84b83c7eda95fbc0729844a"
 dependencies = [
  "arrayvec 0.7.4",
  "ascii",
@@ -7598,9 +7606,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_minifier"
-version = "23.0.2"
+version = "23.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50b6d32c649a7c78973768b629c8d60f06774be2a648b03c9c342200d4fd9f8b"
+checksum = "074576937cf3c1749edd06cd05573fc2fed9570c57e9e28f870c1e525ec97bb1"
 dependencies = [
  "arrayvec 0.7.4",
  "bitflags 2.9.0",
@@ -7636,9 +7644,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_parser"
-version = "17.0.2"
+version = "17.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3c0c2fc27655ed52958f39156af28407257c51c48551932d94a7e7bd973b2b1"
+checksum = "e746147b3638778a3bc3665f933f62de2d2a5a7fb6b578cc2d6ef72c76bf0191"
 dependencies = [
  "arrayvec 0.7.4",
  "bitflags 2.9.0",
