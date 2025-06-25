@@ -456,9 +456,7 @@ pub struct AsyncModuleInfo {
 #[turbo_tasks::value_impl]
 impl AsyncModuleInfo {
     #[turbo_tasks::function]
-    pub async fn new(
-        referenced_async_modules: Vec<ResolvedVc<Box<dyn Module>>>,
-    ) -> Result<Vc<Self>> {
+    pub fn new(referenced_async_modules: Vec<ResolvedVc<Box<dyn Module>>>) -> Result<Vc<Self>> {
         Ok(Self {
             referenced_async_modules: referenced_async_modules.into_iter().collect(),
         }

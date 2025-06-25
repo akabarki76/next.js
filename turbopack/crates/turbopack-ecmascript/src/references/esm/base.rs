@@ -720,7 +720,7 @@ impl Issue for InvalidExport {
     }
 
     #[turbo_tasks::function]
-    async fn title(&self) -> Result<Vc<StyledString>> {
+    fn title(&self) -> Result<Vc<StyledString>> {
         Ok(StyledString::Line(vec![
             StyledString::Text(rcstr!("Export ")),
             StyledString::Code(self.export.clone()),

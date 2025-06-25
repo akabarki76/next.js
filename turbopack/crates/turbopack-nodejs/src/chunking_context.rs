@@ -285,7 +285,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     }
 
     #[turbo_tasks::function]
-    async fn chunk_root_path(&self) -> Vc<FileSystemPath> {
+    fn chunk_root_path(&self) -> Vc<FileSystemPath> {
         *self.chunk_root_path
     }
 
@@ -326,7 +326,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     }
 
     #[turbo_tasks::function]
-    async fn chunking_configs(&self) -> Result<Vc<ChunkingConfigs>> {
+    fn chunking_configs(&self) -> Result<Vc<ChunkingConfigs>> {
         Ok(Vc::cell(self.chunking_configs.iter().cloned().collect()))
     }
 

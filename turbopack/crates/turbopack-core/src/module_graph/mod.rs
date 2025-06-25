@@ -79,7 +79,7 @@ pub struct VisitedModules {
 #[turbo_tasks::value_impl]
 impl VisitedModules {
     #[turbo_tasks::function]
-    pub async fn empty() -> Vc<Self> {
+    pub fn empty() -> Vc<Self> {
         Self {
             modules: Default::default(),
             next_graph_idx: 0,
@@ -112,7 +112,7 @@ impl VisitedModules {
     }
 
     #[turbo_tasks::function]
-    pub async fn with_incremented_index(&self) -> Result<Vc<Self>> {
+    pub fn with_incremented_index(&self) -> Result<Vc<Self>> {
         Ok(Self {
             modules: self.modules.clone(),
             next_graph_idx: self.next_graph_idx + 1,
@@ -178,7 +178,7 @@ impl GraphEntries {
 #[turbo_tasks::value(cell = "new", eq = "manual", into = "new")]
 #[derive(Clone, Default)]
 pub struct SingleModuleGraph {
-    graph: TracedDiGraph<SingleModuleGraphNode, RefData>,
+    pub graph: TracedDiGraph<SingleModuleGraphNode, RefData>,
 
     /// The number of modules in the graph (excluding VisitedModule nodes)
     pub number_of_modules: usize,

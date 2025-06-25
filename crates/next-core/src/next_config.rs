@@ -1338,7 +1338,7 @@ impl NextConfig {
     }
 
     #[turbo_tasks::function]
-    pub async fn import_externals(&self) -> Result<Vc<bool>> {
+    pub fn import_externals(&self) -> Result<Vc<bool>> {
         Ok(Vc::cell(match self.experimental.esm_externals {
             Some(EsmExternals::Bool(b)) => b,
             Some(EsmExternals::Loose(_)) => bail!("esmExternals = \"loose\" is not supported"),
@@ -1604,7 +1604,7 @@ impl NextConfig {
     }
 
     #[turbo_tasks::function]
-    pub async fn client_source_maps(&self, _mode: Vc<NextMode>) -> Result<Vc<bool>> {
+    pub fn client_source_maps(&self, _mode: Vc<NextMode>) -> Result<Vc<bool>> {
         // Temporarily always enable client source maps as tests regress.
         // TODO: Respect both `self.experimental.turbopack_source_maps` and
         //       `self.production_browser_source_maps`
@@ -1613,13 +1613,13 @@ impl NextConfig {
     }
 
     #[turbo_tasks::function]
-    pub async fn server_source_maps(&self) -> Result<Vc<bool>> {
+    pub fn server_source_maps(&self) -> Result<Vc<bool>> {
         let source_maps = self.experimental.turbopack_source_maps;
         Ok(Vc::cell(source_maps.unwrap_or(true)))
     }
 
     #[turbo_tasks::function]
-    pub async fn typescript_tsconfig_path(&self) -> Result<Vc<Option<RcStr>>> {
+    pub fn typescript_tsconfig_path(&self) -> Result<Vc<Option<RcStr>>> {
         Ok(Vc::cell(
             self.typescript
                 .tsconfig_path

@@ -146,7 +146,7 @@ pub mod tests {
     }
 
     #[turbo_tasks::function(operation)]
-    pub async fn track_star_star_glob(path: ResolvedVc<FileSystemPath>) -> Vc<Completion> {
+    pub fn track_star_star_glob(path: ResolvedVc<FileSystemPath>) -> Vc<Completion> {
         path.track_glob(Glob::new("**".into()), false)
     }
 

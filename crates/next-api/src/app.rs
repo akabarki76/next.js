@@ -429,7 +429,7 @@ impl AppProject {
     }
 
     #[turbo_tasks::function]
-    async fn rsc_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
+    fn rsc_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         Ok(ModuleAssetContext::new(
             self.get_rsc_transitions(
                 self.ecmascript_client_reference_transition(),
@@ -444,7 +444,7 @@ impl AppProject {
     }
 
     #[turbo_tasks::function]
-    async fn edge_rsc_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
+    fn edge_rsc_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         Ok(ModuleAssetContext::new(
             self.get_rsc_transitions(
                 self.edge_ecmascript_client_reference_transition(),
@@ -678,7 +678,7 @@ impl AppProject {
     }
 
     #[turbo_tasks::function]
-    async fn shared_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
+    fn shared_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         Ok(ModuleAssetContext::new(
             TransitionOptions {
                 ..Default::default()
@@ -738,7 +738,7 @@ impl AppProject {
     }
 
     #[turbo_tasks::function]
-    async fn edge_shared_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
+    fn edge_shared_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         Ok(ModuleAssetContext::new(
             TransitionOptions {
                 ..Default::default()

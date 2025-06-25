@@ -71,20 +71,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/actions-deployment-skew/actions-deployment-skew.test.ts": {
-    "passed": [
-      "actions-deployment-skew in the edge runtime with a form action and JavaScript disabled should respond with a 404 for an unknown server action",
-      "actions-deployment-skew in the edge runtime with a form action and JavaScript enabled should respond with a 404 for an unknown server action",
-      "actions-deployment-skew in the edge runtime with a normal action should respond with a 404 for an unknown server action",
-      "actions-deployment-skew in the node runtime with a form action and JavaScript disabled should respond with a 404 for an unknown server action",
-      "actions-deployment-skew in the node runtime with a form action and JavaScript enabled should respond with a 404 for an unknown server action",
-      "actions-deployment-skew in the node runtime with a normal action should respond with a 404 for an unknown server action"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/e2e/app-dir/actions-navigation/index.test.ts": {
     "passed": [
       "app-dir action handling should handle actions correctly after following a relative link",
@@ -98,6 +84,26 @@
   "test/e2e/app-dir/actions-revalidate-remount/actions-revalidate-remount.test.ts": {
     "passed": [
       "actions-revalidate-remount should not remount the page + loading component when revalidating"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/actions-unrecognized/actions-unrecognized.test.ts": {
+    "passed": [
+      "unrecognized server actions should 404 when POSTing a non-server-action request to a nonexistent page",
+      "unrecognized server actions should 404 when POSTing a server action with an unrecognized id to a nonexistent page: form-data/multipart",
+      "unrecognized server actions should 404 when POSTing a server action with an unrecognized id to a nonexistent page: plaintext",
+      "unrecognized server actions should 404 when POSTing a server action with an unrecognized id to a nonexistent page: urlencoded",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - edge server action invoked from JS - with complex argument",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - edge server action invoked from JS - with simple argument",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - edge server action invoked via form - js disabled",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - edge server action invoked via form - js enabled",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - nodejs server action invoked from JS - with complex argument",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - nodejs server action invoked from JS - with simple argument",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - nodejs server action invoked via form - js disabled",
+      "unrecognized server actions should error and log a warning when submitting a server action with an unrecognized ID - nodejs server action invoked via form - js enabled"
     ],
     "failed": [],
     "pending": [],
@@ -168,13 +174,12 @@
       "app-dir action handling redirects merges cookies correctly when redirecting",
       "app-dir action handling redirects redirects properly when route handler redirects with a 307 status code",
       "app-dir action handling redirects redirects properly when route handler redirects with a 308 status code",
-      "app-dir action handling redirects redirects properly when server action handler uses `permanentRedirect`",
-      "app-dir action handling redirects redirects properly when server action handler uses `redirect`",
+      "app-dir action handling redirects redirects properly when route handler uses `permanentRedirect`",
+      "app-dir action handling redirects redirects properly when route handler uses `redirect`",
       "app-dir action handling redirects should not forward next-action header to a redirected RSC request",
       "app-dir action handling request body decoding should correctly decode multi-byte characters in the request body (edge)",
       "app-dir action handling request body decoding should correctly decode multi-byte characters in the request body (node)",
       "app-dir action handling server actions render client components server component imported action should support importing client components from actions",
-      "app-dir action handling should 404 when POSTing an invalid server action",
       "app-dir action handling should be possible to catch network errors",
       "app-dir action handling should be possible to catch regular errors",
       "app-dir action handling should forward action request to a worker that contains the action handler (edge)",
@@ -184,7 +189,6 @@
       "app-dir action handling should handle basic actions correctly",
       "app-dir action handling should invalidate the client router cache if the redirect action triggers a revalidation",
       "app-dir action handling should keep action instances identical",
-      "app-dir action handling should log a warning when a server action is not found but an id is provided",
       "app-dir action handling should not block navigation events while a server action is in flight",
       "app-dir action handling should not block router.back() while a server action is in flight",
       "app-dir action handling should not error when a forwarded action triggers a redirect (edge)",
@@ -302,13 +306,12 @@
       "app-dir action handling redirects merges cookies correctly when redirecting",
       "app-dir action handling redirects redirects properly when route handler redirects with a 307 status code",
       "app-dir action handling redirects redirects properly when route handler redirects with a 308 status code",
-      "app-dir action handling redirects redirects properly when server action handler uses `permanentRedirect`",
-      "app-dir action handling redirects redirects properly when server action handler uses `redirect`",
+      "app-dir action handling redirects redirects properly when route handler uses `permanentRedirect`",
+      "app-dir action handling redirects redirects properly when route handler uses `redirect`",
       "app-dir action handling redirects should not forward next-action header to a redirected RSC request",
       "app-dir action handling request body decoding should correctly decode multi-byte characters in the request body (edge)",
       "app-dir action handling request body decoding should correctly decode multi-byte characters in the request body (node)",
       "app-dir action handling server actions render client components server component imported action should support importing client components from actions",
-      "app-dir action handling should 404 when POSTing an invalid server action",
       "app-dir action handling should be possible to catch network errors",
       "app-dir action handling should be possible to catch regular errors",
       "app-dir action handling should forward action request to a worker that contains the action handler (edge)",
@@ -318,7 +321,6 @@
       "app-dir action handling should handle basic actions correctly",
       "app-dir action handling should invalidate the client router cache if the redirect action triggers a revalidation",
       "app-dir action handling should keep action instances identical",
-      "app-dir action handling should log a warning when a server action is not found but an id is provided",
       "app-dir action handling should not block navigation events while a server action is in flight",
       "app-dir action handling should not block router.back() while a server action is in flight",
       "app-dir action handling should not error when a forwarded action triggers a redirect (edge)",
@@ -3045,8 +3047,8 @@
   },
   "test/e2e/app-dir/metadata-edge/index.test.ts": {
     "passed": [
-      "app dir - Metadata API on the Edge runtime should render OpenGraph image meta tag correctly",
-      "app dir - Metadata API on the Edge runtime OG image route should not bundle `ImageResponse` into the page worker"
+      "app dir - Metadata API on the Edge runtime OG image route should not bundle `ImageResponse` into the page worker",
+      "app dir - Metadata API on the Edge runtime should render OpenGraph image meta tag correctly"
     ],
     "failed": [],
     "pending": [],
@@ -5176,17 +5178,15 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/scss/invalid-global-with-app/invalid-global-with-app.test.ts": {
-    "passed": [],
-    "failed": [
-      "Invalid Global CSS with Custom App production only should fail to build"
-    ],
+    "passed": ["Invalid Global CSS with Custom App should fail to build"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
   },
   "test/e2e/app-dir/scss/invalid-global/invalid-global.test.ts": {
-    "passed": [],
-    "failed": ["Invalid Global CSS production only should fail to build"],
+    "passed": ["Invalid Global CSS should fail to build"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -5408,10 +5408,10 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/scss/valid-and-invalid-global/valid-and-invalid-global.test.ts": {
-    "passed": [],
-    "failed": [
-      "Valid and Invalid Global CSS with Custom App production only should fail to build"
+    "passed": [
+      "Valid and Invalid Global CSS with Custom App should fail to build"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -8430,6 +8430,8 @@
       "Prerender should support prerendered catchall route",
       "Prerender should support prerendered catchall-explicit route (nested)",
       "Prerender should support prerendered catchall-explicit route (single)",
+      "Prerender should use correct caching headers for a fallback-true page (lazy)",
+      "Prerender should use correct caching headers for a fallback-true page (prerendered)",
       "Prerender should use correct caching headers for a no-revalidate page",
       "Prerender should use correct caching headers for a revalidate page"
     ],

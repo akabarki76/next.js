@@ -299,7 +299,7 @@ turbopack-trace-utils = { path = "turbopack/crates/turbopack-trace-utils" }
 turbopack-wasm = { path = "turbopack/crates/turbopack-wasm" }
 
 # SWC crates
-swc_core = { version = "29.1.2", features = [
+swc_core = { version = "29.1.4", features = [
   "ecma_loader_lru",
   "ecma_loader_parking_lot",
   "parallel_rayon",
@@ -311,7 +311,7 @@ browserslist-rs = { version = "0.18.0" }
 mdxjs = "1.0.3"
 modularize_imports = { version = "0.89.0" }
 styled_components = { version = "0.117.0" }
-styled_jsx = { version = "0.93.0" }
+styled_jsx = { version = "0.93.2" }
 swc_emotion = { version = "0.93.0" }
 swc_relay = { version = "0.63.0" }
 
@@ -358,7 +358,7 @@ image = { version = "0.25.0", default-features = false }
 indexmap = "2.7.1"
 indoc = "2.0.0"
 itertools = "0.10.5"
-lightningcss = { version = "1.0.0-alpha.66", features = [
+lightningcss = { version = "1.0.0-alpha.67", features = [
   "serde",
   "visitor",
   "into_owned",
@@ -382,7 +382,7 @@ napi = { version = "2", default-features = false, features = [
 notify = "8.0.0"
 once_cell = "1.17.1"
 owo-colors = "3.5.0"
-parcel_selectors = "0.28.1"
+parcel_selectors = "0.28.2"
 parking_lot = "0.12.1"
 pathdiff = "0.2.1"
 petgraph = "0.6.3"
@@ -435,6 +435,4 @@ vergen-gitcl = { version = "1.0.8", features = [
 webbrowser = "0.8.7"
 
 [patch.crates-io]
-lightningcss = { git = "https://github.com/timneutkens/lightningcss", branch = "add/browserslist-options"}
-parcel_selectors = { git = "https://github.com/timneutkens/lightningcss", branch = "add/browserslist-options"}
 mdxjs = { git = "https://github.com/kdy1/mdxjs-rs.git", branch = "swc-core-29" }
