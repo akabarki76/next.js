@@ -1,30 +1,45 @@
-name: CodSpeed
+name: CodSpeed Benchmarks
 
+# trigger on manual dispatch, pushes to canary, and daily schedule
 on:
-  # Run on pushes to the main branch
+  workflow_dispatch:
   push:
     branches:
-      - "main" # or "master"
-  # Run on pull requests
-  pull_request:
-  # `workflow_dispatch` allows CodSpeed to trigger backtest
-  # performance analysis in order to generate initial data.
-  workflow_dispatch:
+      - canary
+  schedule:
+    - cron: '0 5 * * *'  # every day at 05:00 UTC
 
 jobs:
-  benchmarks:
-    name: Run benchmarks
+  benchmark:
     runs-on: ubuntu-latest
     steps:
+      # 1. checkout your code
       - uses: actions/checkout@v4
-      # ...
-      # Setup your environment here:
-      #  - Configure your Python/Rust/Node version
-      #  - Install your dependencies
-      #  - Build your benchmarks (if using a compiled language)
-      # ...
+
+      # 2. ensure Node is available
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. install dependencies (adjust if you use npm/yarn)
+      - name: Install dependencies
+        run: pnpm install
+        shell: bash
+
+      # 4. install the CodSpeed runner (pins v3.5.0)
+      - name: Install CodSpeed runner
+        run: |
+          curl -fsSL https://github.com/CodSpeedHQ/runner/releases/download/v3.5.0/codspeed-runner-installer.sh \
+            | dos2unix \
+            | bash
+        shell: bash
+        env:
+          CODSPEED_RUNNER_VERSION: '3.5.0'
+
+      # 5. actually run your benchmarks
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v3
         with:
-          token: ${{ secrets.CODSPEED_TOKEN }}
-          run: "<Insert your benchmark command here>"
+          version: '3.5.0'
+          args: 'pnpm vitest bench --reporter=dot'
