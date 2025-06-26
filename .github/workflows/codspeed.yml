@@ -1,4 +1,6 @@
 name: CodSpeed Benchmarks
+permissions:
+  contents: read
 
 # trigger on manual dispatch, pushes to canary, and daily schedule
 on:
