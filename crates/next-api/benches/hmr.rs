@@ -1,5 +1,3 @@
-extern crate turbo_tasks_malloc;
-
 use std::{
     env,
     fs::{create_dir_all, write},

@@ -1135,6 +1135,7 @@ impl PageEndpoint {
                     ResolvedVc::cell(Some(ResolvedVc::upcast(
                         NftJsonAsset::new(
                             project,
+                            Some(this.original_name.clone()),
                             *ssr_entry_chunk,
                             loadable_manifest_output
                                 .await?

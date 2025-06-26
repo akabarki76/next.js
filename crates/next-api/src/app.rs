@@ -1670,9 +1670,11 @@ impl AppEndpoint {
                     .await?
                     .is_production()
                 {
+                    let page_name = app_entry.pathname.clone();
                     server_assets.insert(ResolvedVc::upcast(
                         NftJsonAsset::new(
                             project,
+                            Some(page_name),
                             *rsc_chunk,
                             client_reference_manifest
                                 .iter()

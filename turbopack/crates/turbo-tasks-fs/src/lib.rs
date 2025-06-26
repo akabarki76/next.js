@@ -46,7 +46,8 @@ use invalidator_map::InvalidatorMap;
 use jsonc_parser::{ParseOptions, parse_to_serde_value};
 use mime::Mime;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use read_glob::track_glob;
+pub use read_glob::ReadGlobResult;
+use read_glob::{read_glob, track_glob};
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -1264,6 +1265,11 @@ impl FileSystemPath {
             )));
         }
         Ok(FileSystemPathOption::none())
+    }
+
+    #[turbo_tasks::function]
+    pub async fn read_glob(self: Vc<Self>, glob: Vc<Glob>) -> Result<Vc<ReadGlobResult>> {
+        read_glob(self, glob).await
     }
 
     // Tracks all files and directories matching the glob
