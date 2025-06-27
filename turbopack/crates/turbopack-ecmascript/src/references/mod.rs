@@ -65,8 +65,8 @@ use turbo_tasks::{
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     compile_time_info::{
-        CompileTimeInfo, DefineableNameSegment, FreeVarReference, FreeVarReferences,
-        FreeVarReferencesIndividual, InputRelativeConstant,
+        CompileTimeDefineValue, CompileTimeInfo, DefineableNameSegment, FreeVarReference,
+        FreeVarReferences, FreeVarReferencesIndividual, InputRelativeConstant,
     },
     environment::Rendering,
     error::PrettyPrintError,
@@ -624,12 +624,11 @@ pub(crate) async fn analyse_ecmascript_module_internal(
     });
     analysis.set_has_side_effect_free_directive(has_side_effect_free_directive);
 
-    let compile_time_info = compile_time_info_for_module_type(
-        *raw_module.compile_time_info,
-        eval_context.is_esm(specified_type),
-    )
-    .to_resolved()
-    .await?;
+    let is_esm = eval_context.is_esm(specified_type);
+    let compile_time_info =
+        compile_time_info_for_module_type(*raw_module.compile_time_info, is_esm)
+            .to_resolved()
+            .await?;
 
     let pos = program.span().lo;
     if analyze_types {
@@ -1537,7 +1536,30 @@ async fn compile_time_info_for_module_type(
             )
         },
     ));
-
+    // A 'free' reference to `this` in an ESM module is meant to be `undefined`
+    // Compile time replace it so we can represent module-factories as arrow functions without
+    // needing to be defensive about rebinding this. Do the same for CJS modules while we are
+    // here.
+    let this = rcstr!("this");
+    free_var_references
+        .entry(vec![DefineableNameSegment::Name(this.clone())])
+        .or_insert(if is_esm {
+            FreeVarReference::Value(CompileTimeDefineValue::Undefined)
+        } else {
+            // Insert `__turbopack_context__.e` which is equivalent to `module.exports` but should
+            // not be shadowed by user symbols.
+            FreeVarReference::Member(rcstr!("__turbopack_context__"), rcstr!("e"))
+        });
+    free_var_references
+        .entry(vec![
+            DefineableNameSegment::Name(this),
+            DefineableNameSegment::TypeOf,
+        ])
+        .or_insert(if is_esm {
+            "undefined".into()
+        } else {
+            "object".into()
+        });
     Ok(CompileTimeInfo {
         environment: compile_time_info.environment,
         defines: compile_time_info.defines,
@@ -2565,7 +2587,11 @@ async fn handle_free_var_reference(
         } => {
             let esm_reference = analysis
                 .add_esm_reference_free_var(request.clone(), async || {
-                    Ok(EsmAssetReference::new(
+                    // There would be no import in the first place if you don't reference the given
+                    // free var (e.g. `process`). This means that it's also fine to remove the
+                    // import again if the variable reference turns out be dead code in some later
+                    // stage of the build, thus mark the import call as /*@__PURE__*/.
+                    Ok(EsmAssetReference::new_pure(
                         if let Some(lookup_path) = lookup_path {
                             ResolvedVc::upcast(
                                 PlainResolveOrigin::new(

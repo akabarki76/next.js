@@ -127,7 +127,7 @@ use crate::{
     side_effect_optimization::reference::EcmascriptModulePartReference,
     simple_tree_shake::{ModuleExportUsageInfo, get_module_export_usages},
     swc_comments::{CowComments, ImmutableComments},
-    transform::remove_shebang,
+    transform::{remove_directives, remove_shebang},
 };
 
 #[derive(
@@ -888,6 +888,7 @@ pub struct EcmascriptModuleContent {
     pub inner_code: Rope,
     pub source_map: Option<Rope>,
     pub is_esm: bool,
+    pub strict: bool,
     pub additional_ids: SmallVec<[ResolvedVc<ModuleId>; 1]>,
 }
 
@@ -1144,6 +1145,7 @@ impl EcmascriptModuleContent {
             },
             export_contexts: None,
             is_esm: true,
+            strict: true,
             generate_source_map: options.generate_source_map,
             original_source_map: CodeGenResultOriginalSourceMap::ScopeHoisting(
                 original_source_maps,
@@ -1546,6 +1548,7 @@ struct CodeGenResult {
     /// `eval_context.imports.exports`
     export_contexts: Option<FxHashMap<RcStr, Id>>,
     is_esm: bool,
+    strict: bool,
     generate_source_map: bool,
     original_source_map: CodeGenResultOriginalSourceMap,
     minify: MinifyType,
@@ -1571,12 +1574,13 @@ async fn process_parse_result(
     with_consumed_parse_result(
         parsed,
         async |mut program, source_map, globals, eval_context, comments| -> Result<CodeGenResult> {
-            let (top_level_mark, is_esm, export_contexts) = eval_context
+            let (top_level_mark, is_esm, strict, export_contexts) = eval_context
                 .map_either(
                     |e| {
                         (
                             e.top_level_mark,
                             e.is_esm(specified_module_type),
+                            e.imports.strict,
                             Cow::Owned(e.imports.exports),
                         )
                     },
@@ -1584,6 +1588,7 @@ async fn process_parse_result(
                         (
                             e.top_level_mark,
                             e.is_esm(specified_module_type),
+                            e.imports.strict,
                             Cow::Borrowed(&e.imports.exports),
                         )
                     },
@@ -1711,6 +1716,7 @@ async fn process_parse_result(
                 // we need to remove any shebang before bundling as it's only valid as the first
                 // line in a js file (not in a chunk item wrapped in the runtime)
                 remove_shebang(&mut program);
+                remove_directives(&mut program);
             });
 
             Ok(CodeGenResult {
@@ -1725,6 +1731,7 @@ async fn process_parse_result(
                 // TODO ideally don't clone here at all
                 export_contexts: Some(export_contexts.into_owned()),
                 is_esm,
+                strict,
                 generate_source_map,
                 original_source_map: CodeGenResultOriginalSourceMap::Single(original_source_map),
                 minify,
@@ -1760,6 +1767,7 @@ async fn process_parse_result(
                         comments: CodeGenResultComments::Empty,
                         export_contexts: None,
                         is_esm: false,
+                        strict: false,
                         generate_source_map: false,
                         original_source_map: CodeGenResultOriginalSourceMap::Single(None),
                         minify: MinifyType::NoMinify,
@@ -1787,6 +1795,7 @@ async fn process_parse_result(
                         comments: CodeGenResultComments::Empty,
                         export_contexts: None,
                         is_esm: false,
+                        strict: false,
                         generate_source_map: false,
                         original_source_map: CodeGenResultOriginalSourceMap::Single(None),
                         minify: MinifyType::NoMinify,
@@ -1877,6 +1886,7 @@ async fn emit_content(
         source_map,
         comments,
         is_esm,
+        strict,
         generate_source_map,
         original_source_map,
         minify,
@@ -1941,6 +1951,7 @@ async fn emit_content(
         inner_code: bytes.into(),
         source_map,
         is_esm,
+        strict,
         additional_ids,
     }
     .cell())
@@ -2405,6 +2416,21 @@ enum CodeGenResultCommentsConsumable<'a> {
 unsafe impl Send for CodeGenResultComments {}
 unsafe impl Sync for CodeGenResultComments {}
 
+/// All BytePos in Spans in the AST are encoded correctly in [`merge_modules`], but the Comments
+/// also contain spans. These also need to be encoded so that all pos in `mappings` are consistently
+/// encoded.
+fn encode_module_into_comment_span(
+    modules_header_width: u32,
+    module: usize,
+    mut comment: Comment,
+) -> Comment {
+    comment.span.lo =
+        CodeGenResultComments::encode_bytepos(modules_header_width, module as u32, comment.span.lo);
+    comment.span.hi =
+        CodeGenResultComments::encode_bytepos(modules_header_width, module as u32, comment.span.hi);
+    comment
+}
+
 impl Comments for CodeGenResultCommentsConsumable<'_> {
     fn add_leading(&self, _pos: BytePos, _cmt: Comment) {
         unimplemented!()
@@ -2448,7 +2474,12 @@ impl Comments for CodeGenResultCommentsConsumable<'_> {
             } => {
                 let (module, pos) =
                     CodeGenResultComments::decode_bytepos(*modules_header_width, pos);
-                comments[module].take_leading(pos)
+                comments[module].take_leading(pos).map(|comments| {
+                    comments
+                        .into_iter()
+                        .map(|c| encode_module_into_comment_span(*modules_header_width, module, c))
+                        .collect()
+                })
             }
             Self::Empty => None,
         }
@@ -2466,7 +2497,12 @@ impl Comments for CodeGenResultCommentsConsumable<'_> {
             } => {
                 let (module, pos) =
                     CodeGenResultComments::decode_bytepos(*modules_header_width, pos);
-                comments[module].get_leading(pos)
+                comments[module].get_leading(pos).map(|comments| {
+                    comments
+                        .into_iter()
+                        .map(|c| encode_module_into_comment_span(*modules_header_width, module, c))
+                        .collect()
+                })
             }
             Self::Empty => None,
         }
@@ -2517,7 +2553,12 @@ impl Comments for CodeGenResultCommentsConsumable<'_> {
             } => {
                 let (module, pos) =
                     CodeGenResultComments::decode_bytepos(*modules_header_width, pos);
-                comments[module].take_trailing(pos)
+                comments[module].take_trailing(pos).map(|comments| {
+                    comments
+                        .into_iter()
+                        .map(|c| encode_module_into_comment_span(*modules_header_width, module, c))
+                        .collect()
+                })
             }
             Self::Empty => None,
         }
@@ -2535,7 +2576,12 @@ impl Comments for CodeGenResultCommentsConsumable<'_> {
             } => {
                 let (module, pos) =
                     CodeGenResultComments::decode_bytepos(*modules_header_width, pos);
-                comments[module].get_leading(pos)
+                comments[module].get_leading(pos).map(|comments| {
+                    comments
+                        .into_iter()
+                        .map(|c| encode_module_into_comment_span(*modules_header_width, module, c))
+                        .collect()
+                })
             }
             Self::Empty => None,
         }

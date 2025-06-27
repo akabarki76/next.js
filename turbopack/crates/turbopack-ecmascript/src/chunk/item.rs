@@ -51,6 +51,7 @@ impl EcmascriptChunkItemContent {
 
         let content = content.await?;
         let async_module = async_module_options.owned().await?;
+        let strict = content.strict;
 
         Ok(EcmascriptChunkItemContent {
             rewrite_source_path: if *chunking_context.should_use_file_source_map_uris().await? {
@@ -76,12 +77,12 @@ impl EcmascriptChunkItemContent {
                 }
 
                 EcmascriptChunkItemOptions {
+                    strict,
                     refresh,
                     externals,
                     // These things are not available in ESM
                     module: true,
                     exports: true,
-                    this: true,
                     ..Default::default()
                 }
             },
@@ -115,11 +116,7 @@ impl EcmascriptChunkItemContent {
         if !additional_ids.is_empty() {
             code += "["
         }
-        if self.options.this {
-            code += "(function(__turbopack_context__) {\n";
-        } else {
-            code += "((__turbopack_context__) => {\n";
-        }
+        code += "((__turbopack_context__) => {\n";
         if self.options.strict {
             code += "\"use strict\";\n\n";
         } else {
@@ -189,7 +186,6 @@ pub struct EcmascriptChunkItemOptions {
     /// Whether this chunk item's module is async (either has a top level await
     /// or is importing async modules).
     pub async_module: Option<AsyncModuleOptions>,
-    pub this: bool,
     /// Whether this chunk item's module factory should include
     /// `__turbopack_wasm__` to load WebAssembly.
     pub wasm: bool,

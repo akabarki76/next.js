@@ -3,7 +3,7 @@ use std::iter::once;
 use anyhow::{Result, bail};
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{FxIndexMap, OptionVcExt, ResolvedVc, TaskInput, Vc};
-use turbo_tasks_env::{EnvMap, ProcessEnv};
+use turbo_tasks_env::EnvMap;
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::{
     css::chunk::CssChunkType,
@@ -381,17 +381,15 @@ async fn next_server_free_vars(define_env: Vc<EnvMap>) -> Result<Vc<FreeVarRefer
 
 #[turbo_tasks::function]
 pub async fn get_server_compile_time_info(
-    process_env: Vc<Box<dyn ProcessEnv>>,
-    define_env: Vc<EnvMap>,
     cwd: RcStr,
+    define_env: Vc<EnvMap>,
+    node_version: ResolvedVc<NodeJsVersion>,
 ) -> Result<Vc<CompileTimeInfo>> {
     CompileTimeInfo::builder(
         Environment::new(ExecutionEnvironment::NodeJsLambda(
             NodeJsEnvironment {
                 compile_target: CompileTarget::current().to_resolved().await?,
-                node_version: NodeJsVersion::resolved_cell(NodeJsVersion::Current(
-                    process_env.to_resolved().await?,
-                )),
+                node_version,
                 cwd: ResolvedVc::cell(Some(cwd)),
             }
             .resolved_cell(),

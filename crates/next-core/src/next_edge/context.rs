@@ -1,7 +1,7 @@
 use anyhow::Result;
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{FxIndexMap, OptionVcExt, ResolvedVc, Vc};
-use turbo_tasks_env::{EnvMap, ProcessEnv};
+use turbo_tasks_env::EnvMap;
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::{css::chunk::CssChunkType, resolve_options_context::ResolveOptionsContext};
 use turbopack_browser::BrowserChunkingContext;
@@ -83,16 +83,11 @@ async fn next_edge_free_vars(
 pub async fn get_edge_compile_time_info(
     project_path: Vc<FileSystemPath>,
     define_env: Vc<EnvMap>,
-    process_env: Vc<Box<dyn ProcessEnv>>,
+    node_version: ResolvedVc<NodeJsVersion>,
 ) -> Result<Vc<CompileTimeInfo>> {
     CompileTimeInfo::builder(
         Environment::new(ExecutionEnvironment::EdgeWorker(
-            EdgeWorkerEnvironment {
-                node_version: NodeJsVersion::resolved_cell(NodeJsVersion::Current(
-                    process_env.to_resolved().await?,
-                )),
-            }
-            .resolved_cell(),
+            EdgeWorkerEnvironment { node_version }.resolved_cell(),
         ))
         .to_resolved()
         .await?,

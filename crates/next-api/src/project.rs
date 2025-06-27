@@ -51,6 +51,7 @@ use turbopack_core::{
     compile_time_info::CompileTimeInfo,
     context::AssetContext,
     diagnostics::DiagnosticExt,
+    environment::NodeJsVersion,
     file_source::FileSource,
     ident::Layer,
     issue::{
@@ -186,6 +187,9 @@ pub struct ProjectOptions {
     /// local names for variables, functions etc., which can be useful for
     /// debugging/profiling purposes.
     pub no_mangling: bool,
+
+    /// The version of Node.js that is available/currently running.
+    pub current_node_js_version: RcStr,
 }
 
 #[derive(
@@ -442,6 +446,7 @@ impl ProjectContainer {
         let preview_props;
         let browserslist_query;
         let no_mangling;
+        let current_node_js_version;
         {
             let options = self.options_state.get();
             let options = options
@@ -464,7 +469,8 @@ impl ProjectContainer {
             build_id = options.build_id.clone();
             preview_props = options.preview_props.clone();
             browserslist_query = options.browserslist_query.clone();
-            no_mangling = options.no_mangling
+            no_mangling = options.no_mangling;
+            current_node_js_version = options.current_node_js_version.clone();
         }
 
         let dist_dir = next_config
@@ -493,6 +499,7 @@ impl ProjectContainer {
             encryption_key,
             preview_props,
             no_mangling,
+            current_node_js_version,
         }
         .cell())
     }
@@ -570,6 +577,8 @@ pub struct Project {
     /// local names for variables, functions etc., which can be useful for
     /// debugging/profiling purposes.
     no_mangling: bool,
+
+    current_node_js_version: RcStr,
 }
 
 #[turbo_tasks::value]
@@ -735,6 +744,11 @@ impl Project {
     #[turbo_tasks::function]
     pub(super) fn env(&self) -> Vc<Box<dyn ProcessEnv>> {
         *self.env
+    }
+
+    #[turbo_tasks::function]
+    pub(super) fn current_node_js_version(&self) -> Vc<NodeJsVersion> {
+        NodeJsVersion::Static(ResolvedVc::cell(self.current_node_js_version.clone())).cell()
     }
 
     #[turbo_tasks::function]
@@ -974,10 +988,10 @@ impl Project {
     pub(super) async fn server_compile_time_info(self: Vc<Self>) -> Result<Vc<CompileTimeInfo>> {
         let this = self.await?;
         Ok(get_server_compile_time_info(
-            self.env(),
-            this.define_env.nodejs(),
             // `/ROOT` corresponds to `[project]/`, so we need exactly the `path` part.
             format!("/ROOT/{}", self.project_path().await?.path).into(),
+            this.define_env.nodejs(),
+            self.current_node_js_version(),
         ))
     }
 
@@ -987,7 +1001,7 @@ impl Project {
         Ok(get_edge_compile_time_info(
             self.project_path(),
             this.define_env.edge(),
-            self.env(),
+            self.current_node_js_version(),
         ))
     }
 

@@ -931,6 +931,14 @@ async fn directory_tree_to_loader_tree_internal(
                     .await?,
             );
         }
+        if modules.global_error.is_none() {
+            modules.global_error = Some(
+                get_next_package(app_dir)
+                    .join(rcstr!("dist/client/components/builtin/global-error.js"))
+                    .to_resolved()
+                    .await?,
+            );
+        }
     }
 
     let mut tree = AppPageLoaderTree {
