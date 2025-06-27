@@ -475,6 +475,7 @@ pub enum ExternalType {
     CommonJs,
     EcmaScriptModule,
     Global,
+    Script,
 }
 
 impl Display for ExternalType {
@@ -484,6 +485,7 @@ impl Display for ExternalType {
             ExternalType::EcmaScriptModule => write!(f, "esm"),
             ExternalType::Url => write!(f, "url"),
             ExternalType::Global => write!(f, "global"),
+            ExternalType::Script => write!(f, "script"),
         }
     }
 }
@@ -2779,7 +2781,6 @@ async fn resolve_import_map_result(
                     **alias_lookup_path,
                     request,
                     match ty {
-                        ExternalType::Url => options,
                         // TODO is that root correct?
                         ExternalType::CommonJs => {
                             node_cjs_resolve_options(alias_lookup_path.root())
@@ -2787,7 +2788,7 @@ async fn resolve_import_map_result(
                         ExternalType::EcmaScriptModule => {
                             node_esm_resolve_options(alias_lookup_path.root())
                         }
-                        ExternalType::Global => options,
+                        ExternalType::Script | ExternalType::Url | ExternalType::Global => options,
                     },
                 )
                 .await?
