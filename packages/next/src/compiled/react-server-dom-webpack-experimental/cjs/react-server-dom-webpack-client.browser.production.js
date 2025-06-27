@@ -235,11 +235,11 @@ function processReply(
         0 === pendingParts && resolve(data);
       } else
         try {
-          var partJSON$22 = JSON.stringify(entry.value, resolveToJSON);
-          data.append(formFieldPrefix + streamId, partJSON$22);
+          var partJSON$21 = JSON.stringify(entry.value, resolveToJSON);
+          data.append(formFieldPrefix + streamId, partJSON$21);
           iterator.next().then(progress, reject);
-        } catch (x$23) {
-          reject(x$23);
+        } catch (x$22) {
+          reject(x$22);
         }
     }
     null === formData && (formData = new FormData());
@@ -284,20 +284,20 @@ function processReply(
               "function" === typeof x.then
             ) {
               pendingParts++;
-              var lazyId$24 = nextPartId++;
+              var lazyId$23 = nextPartId++;
               parentReference = function () {
                 try {
-                  var partJSON$25 = serializeModel(value, lazyId$24),
-                    data$26 = formData;
-                  data$26.append(formFieldPrefix + lazyId$24, partJSON$25);
+                  var partJSON$24 = serializeModel(value, lazyId$23),
+                    data$25 = formData;
+                  data$25.append(formFieldPrefix + lazyId$23, partJSON$24);
                   pendingParts--;
-                  0 === pendingParts && resolve(data$26);
+                  0 === pendingParts && resolve(data$25);
                 } catch (reason) {
                   reject(reason);
                 }
               };
               x.then(parentReference, parentReference);
-              return "$" + lazyId$24.toString(16);
+              return "$" + lazyId$23.toString(16);
             }
             reject(x);
             return null;
@@ -311,9 +311,9 @@ function processReply(
         var promiseId = nextPartId++;
         value.then(function (partValue) {
           try {
-            var partJSON$28 = serializeModel(partValue, promiseId);
+            var partJSON$27 = serializeModel(partValue, promiseId);
             partValue = formData;
-            partValue.append(formFieldPrefix + promiseId, partJSON$28);
+            partValue.append(formFieldPrefix + promiseId, partJSON$27);
             pendingParts--;
             0 === pendingParts && resolve(partValue);
           } catch (reason) {
@@ -337,11 +337,11 @@ function processReply(
       if (isArrayImpl(value)) return value;
       if (value instanceof FormData) {
         null === formData && (formData = new FormData());
-        var data$32 = formData;
+        var data$31 = formData;
         key = nextPartId++;
         var prefix = formFieldPrefix + key + "_";
         value.forEach(function (originalValue, originalKey) {
-          data$32.append(prefix + originalKey, originalValue);
+          data$31.append(prefix + originalKey, originalValue);
         });
         return "$K" + key.toString(16);
       }
@@ -557,6 +557,8 @@ ReactPromise.prototype.then = function (resolve, reject) {
       reject &&
         (null === this.reason && (this.reason = []), this.reason.push(reject));
       break;
+    case "halted":
+      break;
     default:
       reject && reject(this.reason);
   }
@@ -574,6 +576,7 @@ function readChunk(chunk) {
       return chunk.value;
     case "pending":
     case "blocked":
+    case "halted":
       throw chunk;
     default:
       throw chunk.reason;
@@ -891,6 +894,7 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
       return map(response, value, parentObject, key);
     case "pending":
     case "blocked":
+    case "halted":
       return waitForReference(id, parentObject, key, response, map, reference);
     default:
       return (
@@ -954,9 +958,10 @@ function parseModelString(response, parentObject, key, value) {
           createLazyChunkWrapper(response)
         );
       case "@":
-        if (2 === value.length) return new Promise(function () {});
-        parentObject = parseInt(value.slice(2), 16);
-        return getChunk(response, parentObject);
+        return (
+          (parentObject = parseInt(value.slice(2), 16)),
+          getChunk(response, parentObject)
+        );
       case "S":
         return Symbol.for(value.slice(2));
       case "F":
@@ -1141,8 +1146,8 @@ function startReadableStream(response, id, type) {
             (previousBlockedChunk = chunk));
       } else {
         chunk = previousBlockedChunk;
-        var chunk$52 = createPendingChunk(response);
-        chunk$52.then(
+        var chunk$51 = createPendingChunk(response);
+        chunk$51.then(
           function (v) {
             return controller.enqueue(v);
           },
@@ -1150,10 +1155,10 @@ function startReadableStream(response, id, type) {
             return controller.error(e);
           }
         );
-        previousBlockedChunk = chunk$52;
+        previousBlockedChunk = chunk$51;
         chunk.then(function () {
-          previousBlockedChunk === chunk$52 && (previousBlockedChunk = null);
-          resolveModelChunk(chunk$52, json);
+          previousBlockedChunk === chunk$51 && (previousBlockedChunk = null);
+          resolveModelChunk(chunk$51, json);
         });
       }
     },
@@ -1191,33 +1196,31 @@ function startAsyncIterable(response, id, iterator) {
   var buffer = [],
     closed = !1,
     nextWriteIndex = 0,
-    $jscomp$compprop0 = {};
-  $jscomp$compprop0 =
-    (($jscomp$compprop0[ASYNC_ITERATOR] = function () {
-      var nextReadIndex = 0;
-      return createIterator(function (arg) {
-        if (void 0 !== arg)
-          throw Error(
-            "Values cannot be passed to next() of AsyncIterables passed to Client Components."
+    iterable = {};
+  iterable[ASYNC_ITERATOR] = function () {
+    var nextReadIndex = 0;
+    return createIterator(function (arg) {
+      if (void 0 !== arg)
+        throw Error(
+          "Values cannot be passed to next() of AsyncIterables passed to Client Components."
+        );
+      if (nextReadIndex === buffer.length) {
+        if (closed)
+          return new ReactPromise(
+            "fulfilled",
+            { done: !0, value: void 0 },
+            null,
+            response
           );
-        if (nextReadIndex === buffer.length) {
-          if (closed)
-            return new ReactPromise(
-              "fulfilled",
-              { done: !0, value: void 0 },
-              null,
-              response
-            );
-          buffer[nextReadIndex] = createPendingChunk(response);
-        }
-        return buffer[nextReadIndex++];
-      });
-    }),
-    $jscomp$compprop0);
+        buffer[nextReadIndex] = createPendingChunk(response);
+      }
+      return buffer[nextReadIndex++];
+    });
+  };
   resolveStream(
     response,
     id,
-    iterator ? $jscomp$compprop0[ASYNC_ITERATOR]() : $jscomp$compprop0,
+    iterator ? iterable[ASYNC_ITERATOR]() : iterable,
     {
       enqueueValue: function (value) {
         if (nextWriteIndex === buffer.length)
@@ -1288,8 +1291,8 @@ function mergeBuffer(buffer, lastChunk) {
   for (var l = buffer.length, byteLength = lastChunk.length, i = 0; i < l; i++)
     byteLength += buffer[i].byteLength;
   byteLength = new Uint8Array(byteLength);
-  for (var i$53 = (i = 0); i$53 < l; i$53++) {
-    var chunk = buffer[i$53];
+  for (var i$52 = (i = 0); i$52 < l; i$52++) {
+    var chunk = buffer[i$52];
     byteLength.set(chunk, i);
     i += chunk.byteLength;
   }
@@ -1435,6 +1438,7 @@ function processFullBinaryRow(response, id, tag, buffer, chunk) {
       break;
     case 78:
     case 68:
+    case 74:
     case 87:
       throw Error(
         "Failed to read a RSC payload created by a development version of React on the server while using a production version on the client. Always use matching versions on the server and the client."

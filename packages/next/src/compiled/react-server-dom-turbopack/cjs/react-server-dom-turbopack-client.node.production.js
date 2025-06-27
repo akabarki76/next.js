@@ -244,11 +244,11 @@ function processReply(
         0 === pendingParts && resolve(data);
       } else
         try {
-          var partJSON$22 = JSON.stringify(entry.value, resolveToJSON);
-          data.append(formFieldPrefix + streamId, partJSON$22);
+          var partJSON$21 = JSON.stringify(entry.value, resolveToJSON);
+          data.append(formFieldPrefix + streamId, partJSON$21);
           iterator.next().then(progress, reject);
-        } catch (x$23) {
-          reject(x$23);
+        } catch (x$22) {
+          reject(x$22);
         }
     }
     null === formData && (formData = new FormData());
@@ -293,20 +293,20 @@ function processReply(
               "function" === typeof x.then
             ) {
               pendingParts++;
-              var lazyId$24 = nextPartId++;
+              var lazyId$23 = nextPartId++;
               parentReference = function () {
                 try {
-                  var partJSON$25 = serializeModel(value, lazyId$24),
-                    data$26 = formData;
-                  data$26.append(formFieldPrefix + lazyId$24, partJSON$25);
+                  var partJSON$24 = serializeModel(value, lazyId$23),
+                    data$25 = formData;
+                  data$25.append(formFieldPrefix + lazyId$23, partJSON$24);
                   pendingParts--;
-                  0 === pendingParts && resolve(data$26);
+                  0 === pendingParts && resolve(data$25);
                 } catch (reason) {
                   reject(reason);
                 }
               };
               x.then(parentReference, parentReference);
-              return "$" + lazyId$24.toString(16);
+              return "$" + lazyId$23.toString(16);
             }
             reject(x);
             return null;
@@ -320,9 +320,9 @@ function processReply(
         var promiseId = nextPartId++;
         value.then(function (partValue) {
           try {
-            var partJSON$28 = serializeModel(partValue, promiseId);
+            var partJSON$27 = serializeModel(partValue, promiseId);
             partValue = formData;
-            partValue.append(formFieldPrefix + promiseId, partJSON$28);
+            partValue.append(formFieldPrefix + promiseId, partJSON$27);
             pendingParts--;
             0 === pendingParts && resolve(partValue);
           } catch (reason) {
@@ -346,11 +346,11 @@ function processReply(
       if (isArrayImpl(value)) return value;
       if (value instanceof FormData) {
         null === formData && (formData = new FormData());
-        var data$32 = formData;
+        var data$31 = formData;
         key = nextPartId++;
         var prefix = formFieldPrefix + key + "_";
         value.forEach(function (originalValue, originalKey) {
-          data$32.append(prefix + originalKey, originalValue);
+          data$31.append(prefix + originalKey, originalValue);
         });
         return "$K" + key.toString(16);
       }
@@ -715,6 +715,8 @@ ReactPromise.prototype.then = function (resolve, reject) {
       reject &&
         (null === this.reason && (this.reason = []), this.reason.push(reject));
       break;
+    case "halted":
+      break;
     default:
       reject && reject(this.reason);
   }
@@ -732,6 +734,7 @@ function readChunk(chunk) {
       return chunk.value;
     case "pending":
     case "blocked":
+    case "halted":
       throw chunk;
     default:
       throw chunk.reason;
@@ -1061,6 +1064,7 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
       return map(response, value, parentObject, key);
     case "pending":
     case "blocked":
+    case "halted":
       return waitForReference(id, parentObject, key, response, map, reference);
     default:
       return (
@@ -1124,9 +1128,10 @@ function parseModelString(response, parentObject, key, value) {
           createLazyChunkWrapper(response)
         );
       case "@":
-        if (2 === value.length) return new Promise(function () {});
-        parentObject = parseInt(value.slice(2), 16);
-        return getChunk(response, parentObject);
+        return (
+          (parentObject = parseInt(value.slice(2), 16)),
+          getChunk(response, parentObject)
+        );
       case "S":
         return Symbol.for(value.slice(2));
       case "F":
@@ -1316,8 +1321,8 @@ function startReadableStream(response, id, type) {
             (previousBlockedChunk = chunk));
       } else {
         chunk = previousBlockedChunk;
-        var chunk$52 = createPendingChunk(response);
-        chunk$52.then(
+        var chunk$51 = createPendingChunk(response);
+        chunk$51.then(
           function (v) {
             return controller.enqueue(v);
           },
@@ -1325,10 +1330,10 @@ function startReadableStream(response, id, type) {
             return controller.error(e);
           }
         );
-        previousBlockedChunk = chunk$52;
+        previousBlockedChunk = chunk$51;
         chunk.then(function () {
-          previousBlockedChunk === chunk$52 && (previousBlockedChunk = null);
-          resolveModelChunk(chunk$52, json);
+          previousBlockedChunk === chunk$51 && (previousBlockedChunk = null);
+          resolveModelChunk(chunk$51, json);
         });
       }
     },
@@ -1366,33 +1371,31 @@ function startAsyncIterable(response, id, iterator) {
   var buffer = [],
     closed = !1,
     nextWriteIndex = 0,
-    $jscomp$compprop0 = {};
-  $jscomp$compprop0 =
-    (($jscomp$compprop0[ASYNC_ITERATOR] = function () {
-      var nextReadIndex = 0;
-      return createIterator(function (arg) {
-        if (void 0 !== arg)
-          throw Error(
-            "Values cannot be passed to next() of AsyncIterables passed to Client Components."
+    iterable = {};
+  iterable[ASYNC_ITERATOR] = function () {
+    var nextReadIndex = 0;
+    return createIterator(function (arg) {
+      if (void 0 !== arg)
+        throw Error(
+          "Values cannot be passed to next() of AsyncIterables passed to Client Components."
+        );
+      if (nextReadIndex === buffer.length) {
+        if (closed)
+          return new ReactPromise(
+            "fulfilled",
+            { done: !0, value: void 0 },
+            null,
+            response
           );
-        if (nextReadIndex === buffer.length) {
-          if (closed)
-            return new ReactPromise(
-              "fulfilled",
-              { done: !0, value: void 0 },
-              null,
-              response
-            );
-          buffer[nextReadIndex] = createPendingChunk(response);
-        }
-        return buffer[nextReadIndex++];
-      });
-    }),
-    $jscomp$compprop0);
+        buffer[nextReadIndex] = createPendingChunk(response);
+      }
+      return buffer[nextReadIndex++];
+    });
+  };
   resolveStream(
     response,
     id,
-    iterator ? $jscomp$compprop0[ASYNC_ITERATOR]() : $jscomp$compprop0,
+    iterator ? iterable[ASYNC_ITERATOR]() : iterable,
     {
       enqueueValue: function (value) {
         if (nextWriteIndex === buffer.length)
@@ -1463,8 +1466,8 @@ function mergeBuffer(buffer, lastChunk) {
   for (var l = buffer.length, byteLength = lastChunk.length, i = 0; i < l; i++)
     byteLength += buffer[i].byteLength;
   byteLength = new Uint8Array(byteLength);
-  for (var i$53 = (i = 0); i$53 < l; i$53++) {
-    var chunk = buffer[i$53];
+  for (var i$52 = (i = 0); i$52 < l; i$52++) {
+    var chunk = buffer[i$52];
     byteLength.set(chunk, i);
     i += chunk.byteLength;
   }
@@ -1610,6 +1613,7 @@ function processFullBinaryRow(response, id, tag, buffer, chunk) {
       break;
     case 78:
     case 68:
+    case 74:
     case 87:
       throw Error(
         "Failed to read a RSC payload created by a development version of React on the server while using a production version on the client. Always use matching versions on the server and the client."
@@ -1640,6 +1644,84 @@ function processFullBinaryRow(response, id, tag, buffer, chunk) {
               new ReactPromise("resolved_model", buffer, null, response)
             );
   }
+}
+function processBinaryChunk(response, chunk) {
+  for (
+    var i = 0,
+      rowState = response._rowState,
+      rowID = response._rowID,
+      rowTag = response._rowTag,
+      rowLength = response._rowLength,
+      buffer = response._buffer,
+      chunkLength = chunk.length;
+    i < chunkLength;
+
+  ) {
+    var lastIdx = -1;
+    switch (rowState) {
+      case 0:
+        lastIdx = chunk[i++];
+        58 === lastIdx
+          ? (rowState = 1)
+          : (rowID =
+              (rowID << 4) | (96 < lastIdx ? lastIdx - 87 : lastIdx - 48));
+        continue;
+      case 1:
+        rowState = chunk[i];
+        84 === rowState ||
+        65 === rowState ||
+        79 === rowState ||
+        111 === rowState ||
+        85 === rowState ||
+        83 === rowState ||
+        115 === rowState ||
+        76 === rowState ||
+        108 === rowState ||
+        71 === rowState ||
+        103 === rowState ||
+        77 === rowState ||
+        109 === rowState ||
+        86 === rowState
+          ? ((rowTag = rowState), (rowState = 2), i++)
+          : (64 < rowState && 91 > rowState) ||
+              35 === rowState ||
+              114 === rowState ||
+              120 === rowState
+            ? ((rowTag = rowState), (rowState = 3), i++)
+            : ((rowTag = 0), (rowState = 3));
+        continue;
+      case 2:
+        lastIdx = chunk[i++];
+        44 === lastIdx
+          ? (rowState = 4)
+          : (rowLength =
+              (rowLength << 4) | (96 < lastIdx ? lastIdx - 87 : lastIdx - 48));
+        continue;
+      case 3:
+        lastIdx = chunk.indexOf(10, i);
+        break;
+      case 4:
+        (lastIdx = i + rowLength), lastIdx > chunk.length && (lastIdx = -1);
+    }
+    var offset = chunk.byteOffset + i;
+    if (-1 < lastIdx)
+      (rowLength = new Uint8Array(chunk.buffer, offset, lastIdx - i)),
+        processFullBinaryRow(response, rowID, rowTag, buffer, rowLength),
+        (i = lastIdx),
+        3 === rowState && i++,
+        (rowLength = rowID = rowTag = rowState = 0),
+        (buffer.length = 0);
+    else {
+      chunk = new Uint8Array(chunk.buffer, offset, chunk.byteLength - i);
+      buffer.push(chunk);
+      rowLength -= chunk.byteLength;
+      break;
+    }
+  }
+  response._rowState = rowState;
+  response._rowID = rowID;
+  response._rowTag = rowTag;
+  response._rowLength = rowLength;
 }
 function createFromJSONCallback(response) {
   return function (key, value) {
@@ -1681,11 +1763,60 @@ function createFromJSONCallback(response) {
     return value;
   };
 }
+function close(response) {
+  reportGlobalError(response, Error("Connection closed."));
+}
+function noServerCall$1() {
+  throw Error(
+    "Server Functions cannot be called during initial render. This would create a fetch waterfall. Try to use a Server Component to pass data to Client Components instead."
+  );
+}
+function createResponseFromOptions(options) {
+  return new ResponseInstance(
+    options.serverConsumerManifest.moduleMap,
+    options.serverConsumerManifest.serverModuleMap,
+    options.serverConsumerManifest.moduleLoading,
+    noServerCall$1,
+    options.encodeFormAction,
+    "string" === typeof options.nonce ? options.nonce : void 0,
+    options && options.temporaryReferences
+      ? options.temporaryReferences
+      : void 0
+  );
+}
+function startReadingFromStream(response, stream) {
+  function progress(_ref) {
+    var value = _ref.value;
+    if (_ref.done) close(response);
+    else
+      return (
+        processBinaryChunk(response, value),
+        reader.read().then(progress).catch(error)
+      );
+  }
+  function error(e) {
+    reportGlobalError(response, e);
+  }
+  var reader = stream.getReader();
+  reader.read().then(progress).catch(error);
+}
 function noServerCall() {
   throw Error(
     "Server Functions cannot be called during initial render. This would create a fetch waterfall. Try to use a Server Component to pass data to Client Components instead."
   );
 }
+exports.createFromFetch = function (promiseForResponse, options) {
+  var response = createResponseFromOptions(options);
+  promiseForResponse.then(
+    function (r) {
+      startReadingFromStream(response, r.body);
+    },
+    function (e) {
+      reportGlobalError(response, e);
+    }
+  );
+  return getChunk(response, 0);
+};
 exports.createFromNodeStream = function (
   stream,
   serverConsumerManifest,
@@ -1701,94 +1832,50 @@ exports.createFromNodeStream = function (
     void 0
   );
   stream.on("data", function (chunk) {
-    for (
-      var i = 0,
-        rowState = response._rowState,
-        rowID = response._rowID,
-        rowTag = response._rowTag,
-        rowLength = response._rowLength,
-        buffer = response._buffer,
-        chunkLength = chunk.length;
-      i < chunkLength;
-
-    ) {
-      var lastIdx = -1;
-      switch (rowState) {
-        case 0:
-          lastIdx = chunk[i++];
-          58 === lastIdx
-            ? (rowState = 1)
-            : (rowID =
-                (rowID << 4) | (96 < lastIdx ? lastIdx - 87 : lastIdx - 48));
-          continue;
-        case 1:
-          rowState = chunk[i];
-          84 === rowState ||
-          65 === rowState ||
-          79 === rowState ||
-          111 === rowState ||
-          85 === rowState ||
-          83 === rowState ||
-          115 === rowState ||
-          76 === rowState ||
-          108 === rowState ||
-          71 === rowState ||
-          103 === rowState ||
-          77 === rowState ||
-          109 === rowState ||
-          86 === rowState
-            ? ((rowTag = rowState), (rowState = 2), i++)
-            : (64 < rowState && 91 > rowState) ||
-                35 === rowState ||
-                114 === rowState ||
-                120 === rowState
-              ? ((rowTag = rowState), (rowState = 3), i++)
-              : ((rowTag = 0), (rowState = 3));
-          continue;
-        case 2:
-          lastIdx = chunk[i++];
-          44 === lastIdx
-            ? (rowState = 4)
-            : (rowLength =
-                (rowLength << 4) |
-                (96 < lastIdx ? lastIdx - 87 : lastIdx - 48));
-          continue;
-        case 3:
-          lastIdx = chunk.indexOf(10, i);
-          break;
-        case 4:
-          (lastIdx = i + rowLength), lastIdx > chunk.length && (lastIdx = -1);
-      }
-      var offset = chunk.byteOffset + i;
-      if (-1 < lastIdx)
-        (rowLength = new Uint8Array(chunk.buffer, offset, lastIdx - i)),
-          processFullBinaryRow(response, rowID, rowTag, buffer, rowLength),
-          (i = lastIdx),
-          3 === rowState && i++,
-          (rowLength = rowID = rowTag = rowState = 0),
-          (buffer.length = 0);
-      else {
-        chunk = new Uint8Array(chunk.buffer, offset, chunk.byteLength - i);
-        buffer.push(chunk);
-        rowLength -= chunk.byteLength;
-        break;
-      }
-    }
-    response._rowState = rowState;
-    response._rowID = rowID;
-    response._rowTag = rowTag;
-    response._rowLength = rowLength;
+    processBinaryChunk(response, chunk);
   });
   stream.on("error", function (error) {
     reportGlobalError(response, error);
   });
   stream.on("end", function () {
-    reportGlobalError(response, Error("Connection closed."));
+    return close(response);
   });
   return getChunk(response, 0);
 };
+exports.createFromReadableStream = function (stream, options) {
+  options = createResponseFromOptions(options);
+  startReadingFromStream(options, stream);
+  return getChunk(options, 0);
+};
 exports.createServerReference = function (id) {
-  return createServerReference$1(id, noServerCall);
+  return createServerReference$1(id, noServerCall$1);
+};
+exports.createTemporaryReferenceSet = function () {
+  return new Map();
+};
+exports.encodeReply = function (value, options) {
+  return new Promise(function (resolve, reject) {
+    var abort = processReply(
+      value,
+      "",
+      options && options.temporaryReferences
+        ? options.temporaryReferences
+        : void 0,
+      resolve,
+      reject
+    );
+    if (options && options.signal) {
+      var signal = options.signal;
+      if (signal.aborted) abort(signal.reason);
+      else {
+        var listener = function () {
+          abort(signal.reason);
+          signal.removeEventListener("abort", listener);
+        };
+        signal.addEventListener("abort", listener);
+      }
+    }
+  });
 };
 exports.registerServerReference = function (reference, id, encodeFormAction) {
   registerBoundServerReference(reference, id, null, encodeFormAction);

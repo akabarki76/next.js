@@ -49,7 +49,7 @@ use turbopack_core::{
     },
     context::AssetContext,
     file_source::FileSource,
-    ident::AssetIdent,
+    ident::{AssetIdent, Layer},
     module::Module,
     module_graph::{
         GraphEntries, ModuleGraph, SingleModuleGraph, VisitedModules,
@@ -366,7 +366,7 @@ impl PagesProject {
             self.project().client_compile_time_info(),
             self.client_module_options_context(),
             self.client_resolve_options_context(),
-            rcstr!("client"),
+            Layer::new_with_user_friendly_name(rcstr!("client"), rcstr!("Browser")),
         )
     }
 
@@ -377,7 +377,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.ssr_module_options_context(),
             self.ssr_resolve_options_context(),
-            rcstr!("ssr"),
+            Layer::new_with_user_friendly_name(rcstr!("ssr"), rcstr!("SSR")),
         )
     }
 
@@ -390,7 +390,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.api_module_options_context(),
             self.ssr_resolve_options_context(),
-            rcstr!("api"),
+            Layer::new_with_user_friendly_name(rcstr!("api"), rcstr!("Route")),
         )
     }
 
@@ -401,7 +401,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.ssr_data_module_options_context(),
             self.ssr_resolve_options_context(),
-            rcstr!("ssr-data"),
+            Layer::new(rcstr!("ssr-data")),
         )
     }
 
@@ -412,7 +412,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            rcstr!("edge-ssr"),
+            Layer::new_with_user_friendly_name(rcstr!("edge-ssr"), rcstr!("Edge SSR")),
         )
     }
 
@@ -423,7 +423,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_api_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            rcstr!("edge-api"),
+            Layer::new_with_user_friendly_name(rcstr!("edge-api"), rcstr!("Edge Route")),
         )
     }
 
@@ -434,7 +434,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_data_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            rcstr!("edge-ssr-data"),
+            Layer::new(rcstr!("edge-ssr-data")),
         )
     }
 
@@ -1005,6 +1005,11 @@ impl PageEndpoint {
                 // We only validate the global css imports when there is not a `app` folder at the
                 // root of the project.
                 if project.app_project().await?.is_none() {
+                    // We recreate the app_module here because the one provided from the
+                    // `internal_ssr_chunk_module` is not the same as the one
+                    // provided from the `client_module_graph`. There can be cases where
+                    // the `app_module` is None, and we are processing the `pages/_app.js` file
+                    // as a page rather than the app module.
                     let app_module = project
                         .pages_project()
                         .client_module_context()

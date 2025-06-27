@@ -156,7 +156,7 @@ function getSourceMapFromTurbopack(
 }
 
 export async function createHotReloaderTurbopack(
-  opts: SetupOpts,
+  opts: SetupOpts & { isSrcDir: boolean },
   serverFields: ServerFields,
   distDir: string,
   resetFetch: () => void
@@ -652,7 +652,11 @@ export async function createHotReloaderTurbopack(
   )
 
   const middlewares = [
-    getOverlayMiddleware(project, projectPath),
+    getOverlayMiddleware({
+      project,
+      projectPath,
+      isSrcDir: opts.isSrcDir,
+    }),
     getSourceMapMiddleware(project),
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),

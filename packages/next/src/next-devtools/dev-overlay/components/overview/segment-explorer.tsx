@@ -114,11 +114,14 @@ function PageSegmentTreeLayerPresentation({
                     if (!childNode || !childNode.value) {
                       return null
                     }
-                    const fileName =
-                      childNode.value.pagePath.split('/').pop() || ''
+                    const filePath = childNode.value.pagePath
+                    const fileName = filePath.split('/').pop() || ''
                     return (
                       <span
                         key={fileChildSegment}
+                        onClick={() => {
+                          openInEditor({ filePath })
+                        }}
                         className={cx(
                           'segment-explorer-file-label',
                           `segment-explorer-file-label--${childNode.value.type}`
@@ -215,6 +218,7 @@ export const DEV_TOOLS_INFO_RENDER_FILES_STYLES = css`
     font-size: var(--size-12);
     font-weight: 500;
     user-select: none;
+    cursor: pointer;
   }
   .segment-explorer-file-label--layout,
   .segment-explorer-file-label--template,
@@ -242,3 +246,17 @@ export const DEV_TOOLS_INFO_RENDER_FILES_STYLES = css`
     color: var(--color-red-900);
   }
 `
+
+function openInEditor({ filePath }: { filePath: string }) {
+  const params = new URLSearchParams({
+    file: filePath,
+    // Mark the file path is relative to the app directory,
+    // The editor launcher will complete the full path for it.
+    isAppRelativePath: '1',
+  })
+  fetch(
+    `${
+      process.env.__NEXT_ROUTER_BASEPATH || ''
+    }/__nextjs_launch-editor?${params.toString()}`
+  )
+}

@@ -120,7 +120,7 @@ describe('segment-explorer', () => {
     expect(await getSegmentExplorerContent(browser)).toMatchInlineSnapshot(`
      "app/
      layout.tsx
-     not-found-error.js"
+     not-found.js"
     `)
   })
 

@@ -165,9 +165,13 @@ export function DevToolsPanel({
                       onClick={() => setActiveTab('issues')}
                     >
                       Issues
-                      <span data-nextjs-devtools-panel-header-tab-issues-badge>
-                        {issueCount}
-                      </span>
+                      {issueCount > 0 ? (
+                        <span
+                          data-nextjs-devtools-panel-header-tab-issues-badge
+                        >
+                          {issueCount}
+                        </span>
+                      ) : null}
                     </button>
                     <button
                       data-nextjs-devtools-panel-header-tab={
@@ -351,7 +355,9 @@ export const DEVTOOLS_PANEL_STYLES = css`
   }
 
   [data-nextjs-devtools-panel-header-tab-issues-badge] {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 8px;
     background-color: var(--color-red-400);
     color: var(--color-red-900);

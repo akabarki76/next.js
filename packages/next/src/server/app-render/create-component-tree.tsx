@@ -13,7 +13,7 @@ import { createComponentStylesAndScripts } from './create-component-styles-and-s
 import { getLayerAssets } from './get-layer-assets'
 import { hasLoadingComponentInTree } from './has-loading-component-in-tree'
 import { validateRevalidate } from '../lib/patch-fetch'
-import { PARALLEL_ROUTE_DEFAULT_PATH } from '../../client/components/parallel-route-default'
+import { PARALLEL_ROUTE_DEFAULT_PATH } from '../../client/components/builtin/default'
 import { getTracer } from '../lib/trace/tracer'
 import { NextNodeServerSpan } from '../lib/trace/constants'
 import { StaticGenBailoutError } from '../../client/components/static-generation-bailout'
@@ -1109,7 +1109,7 @@ export function normalizeConventionFilePath(
 ) {
   const cwd = process.env.NEXT_RUNTIME === 'edge' ? '' : process.cwd()
   const nextInternalPrefixRegex =
-    /^(.*[\\/])?next[\\/]dist[\\/]client[\\/]components[\\/]/
+    /^(.*[\\/])?next[\\/]dist[\\/]client[\\/]components[\\/]builtin[\\/]/
 
   let relativePath = (conventionPath || '')
     // remove turbopack [project] prefix

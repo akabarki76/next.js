@@ -198,7 +198,8 @@ import {
   trackPendingImport,
   trackPendingModules,
 } from './module-loading/track-module-loading.external'
-import type { GlobalErrorComponent } from '../../client/components/global-error'
+import { isReactLargeShellError } from './react-large-shell-error'
+import type { GlobalErrorComponent } from '../../client/components/builtin/global-error'
 
 export type GetDynamicParamFromSegment = (
   // [slug] / [[slug]] / [...slug]
@@ -2358,6 +2359,12 @@ async function spawnDynamicValidationInDev(
           return digest
         }
 
+        if (isReactLargeShellError(err)) {
+          // TODO: Aggregate
+          console.error(err)
+          return undefined
+        }
+
         if (initialServerPrerenderController.signal.aborted) {
           // The render aborted before this error was handled which indicates
           // the error is caused by unfinished components within the render
@@ -2466,6 +2473,12 @@ async function spawnDynamicValidationInDev(
             return digest
           }
 
+          if (isReactLargeShellError(err)) {
+            // TODO: Aggregate
+            console.error(err)
+            return undefined
+          }
+
           if (initialClientController.signal.aborted) {
             // These are expected errors that might error the prerender. we ignore them.
           } else if (
@@ -2557,6 +2570,12 @@ async function spawnDynamicValidationInDev(
                 return err.digest
               }
 
+              if (isReactLargeShellError(err)) {
+                // TODO: Aggregate
+                console.error(err)
+                return undefined
+              }
+
               return getDigestForWellKnownError(err)
             },
             signal: finalServerController.signal,
@@ -2631,6 +2650,12 @@ async function spawnDynamicValidationInDev(
                     )
                   }
                   return
+                }
+
+                if (isReactLargeShellError(err)) {
+                  // TODO: Aggregate
+                  console.error(err)
+                  return undefined
                 }
 
                 return getDigestForWellKnownError(err)
@@ -2957,6 +2982,12 @@ async function prerenderToStream(
               return digest
             }
 
+            if (isReactLargeShellError(err)) {
+              // TODO: Aggregate
+              console.error(err)
+              return undefined
+            }
+
             if (initialServerPrerenderController.signal.aborted) {
               // The render aborted before this error was handled which indicates
               // the error is caused by unfinished components within the render
@@ -3056,6 +3087,12 @@ async function prerenderToStream(
 
               if (digest) {
                 return digest
+              }
+
+              if (isReactLargeShellError(err)) {
+                // TODO: Aggregate
+                console.error(err)
+                return undefined
               }
 
               if (initialClientController.signal.aborted) {

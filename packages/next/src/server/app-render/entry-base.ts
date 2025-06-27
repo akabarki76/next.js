@@ -33,7 +33,7 @@ import { patchFetch as _patchFetch } from '../lib/patch-fetch'
 // * ErrorBoundary -> client/components/error-boundary
 // * GlobalError -> client/components/global-error
 import '../../client/components/error-boundary'
-import '../../client/components/global-error'
+import '../../client/components/builtin/global-error'
 import {
   MetadataBoundary,
   ViewportBoundary,

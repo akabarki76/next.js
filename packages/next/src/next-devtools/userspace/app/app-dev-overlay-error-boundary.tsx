@@ -2,7 +2,7 @@ import { PureComponent } from 'react'
 import { dispatcher } from 'next/dist/compiled/next-devtools'
 import { RuntimeErrorHandler } from '../../../client/dev/runtime-error-handler'
 import { ErrorBoundary } from '../../../client/components/error-boundary'
-import DefaultGlobalError from '../../../client/components/global-error'
+import DefaultGlobalError from '../../../client/components/builtin/global-error'
 import type { GlobalErrorState } from '../../../client/components/app-router-instance'
 
 type AppDevOverlayErrorBoundaryProps = {
