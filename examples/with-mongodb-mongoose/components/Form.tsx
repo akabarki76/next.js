@@ -49,6 +49,11 @@ const Form = ({ formId, petForm, forNewPet = true }: Props) => {
   const putData = async (form: FormData) => {
     const { id } = router.query;
 
+    // Validate the `id` parameter to ensure it matches the expected format
+    if (typeof id !== 'string' || !/^[a-fA-F0-9]{24}$/.test(id)) {
+      throw new Error("Invalid ID format");
+    }
+
     try {
       const res = await fetch(`/api/pets/${id}`, {
         method: "PUT",
