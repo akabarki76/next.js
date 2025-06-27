@@ -1,0 +1,30 @@
+# .github/workflows/forward-logs-matrix.yml
+name: Log Forwarding Matrix
+on: [pull_request]
+
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [webpack, rspack]
+        flag: ['true', 'false']
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: pnpm install
+      - name: Configure environment
+        run: |
+          echo "NEXT_EXPERIMENTAL_FORWARD_LOGS=${{ matrix.flag }}" >> $GITHUB_ENV
+          echo "TEST_ENV=${{ matrix.env }}" >> $GITHUB_ENV
+      - name: Run tests
+        run: |
+          if [[ "$TEST_ENV" == "rspack" ]]; then
+            pnpm test-dev-rspack --grep="error-recovery|ReactRefreshLogBox|next-script"
+          else
+            pnpm test-dev --grep="error-recovery|ReactRefreshLogBox|next-script"
+          fi
